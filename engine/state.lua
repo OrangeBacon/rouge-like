@@ -1,5 +1,5 @@
 local Object = require "vendor.classic";
-local gui = require "gui.main"
+local gui = require "gui"
 
 local GameState = Object:extend()
 

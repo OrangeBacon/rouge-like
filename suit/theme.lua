@@ -109,7 +109,8 @@ end
 
 function theme.Input(input, opt, x,y,w,h)
 	local utf8 = require 'utf8'
-	theme.drawBox(x,y,w,h, (opt.color and opt.color.normal) or theme.color.normal, opt.cornerRadius)
+	local c = theme.getColorForState(opt)
+	theme.drawBox(x,y,w,h, c, opt.cornerRadius)
 	x = x + 3
 	w = w - 6
 

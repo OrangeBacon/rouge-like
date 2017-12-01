@@ -1,17 +1,20 @@
 --local Application = require "engine.application"
 --local Loading = require "states.loading"
-local Gui=require "gui.gui"
+local inspect = require "vendor.inspect"
+local Gui = require "gui.gui"
 
 local mainGui = Gui()
 
-mainGui:addControl("hello", "world")
+mainGui.x = 5
 
-print(mainGui["hello"])
-print(Gui().hello)
+print("main:", inspect(mainGui))
+
+local second = mainGui()
+print("new:", inspect(second))
 
 --Application(Loading())
 
---[[
+
 -- suit up
 local suit = require 'suit'
 
@@ -62,4 +65,4 @@ end
 function love.keypressed(key)
 	-- forward keypresses to SUIT
 	suit.keypressed(key)
-end]]
+end

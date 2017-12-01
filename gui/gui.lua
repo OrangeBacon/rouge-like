@@ -1,25 +1,39 @@
 local Object = require "vendor.classic"
 local guicontrol = require "gui.guicontrol"
-local inspect = require "vendor.inspect"
 
 local gui = Object:extend()
 gui.controls = {}
+
+--[[
+  Gui control states:
+  - hovered : mouse is above control
+  - active  : hovered and mouse down until mouse release
+  - hit     : hovered and mouse clicked in this frame
+  - focus   : has keyboard focus, set if active/hit
+  - none    : none of the above 
+]]
+
 
 -- constructor
 function gui:new()
   -- mouse location
   self.mouseX = 0
   self.mouseY = 0
-  self.mouseDown = {left=false, middle=false, right=false}
+  self.mouseDown = false
 
   -- location of top left corner of gui
   self.x = 0
   self.y = 0
 
-  -- mouse stats last frame - used for mouse enter/exit/down/release
-  self.oldMouseX = 0
-  self.oldMouseY = 0
-  self.oldMouseDown = {left=false, middle=false, right=false}
+  -- hovered/active last frame
+  self.lastHovered = nil
+  self.lastActive = nil
+
+  -- currently hovered/active
+  self.hovered = nil
+  self.active = nil
+  self.hit = nil
+  self.focus = nil
 
   -- list of functions to call on next draw call
   self.drawQueue = {n=0}
@@ -73,21 +87,106 @@ function gui:exitFrame()
 end
 
 function gui:enterFrame()
-  self.updateMouse(love.mouse.getX(), love.mouse.getY(), 
-    love.mouse.isDown(1), love.mouse.isDown(3), love.mouse.isDown(2))
+  -- reset active when mouse released
+  if not self.mouseDown then
+    self.active = nil
+  end
+
+  -- reset hit
+  self.hit = nil
+
+  -- set hovered last frame
+  self.lastHovered, self.hovered = self.hovered, nil
+
+  -- set new mouse stats
+  self:updateMouse(love.mouse.getX(), love.mouse.getY(), love.mouse.isDown(1))
 end
 
 -- set mouse x/y/down
-function gui:updateMouse(x, y, left, middle, right)
-  -- set old mouse stats to equal current mouse stats
-  self.oldMouseX = self.mouseX
-  self.oldMouseY = self.mouseY
-  self.oldMouseDown = self.mouseDown
-
-  -- update current mouse stats
+function gui:updateMouse(x, y, down)
   self.mouseX = x
   self.mouseY = y
-  self.mouseDown = {left=left, middle=middle, right=right}
+  self.mouseDown = down
+end
+
+-- is mouse over any control
+function gui:anyHovered()
+  return self.hovered ~= nil
+end
+
+-- is mouse over this control
+function gui:isHovered(id)
+  return self.hovered == id
+end
+
+-- is anything active
+function gui:anyActive()
+  return self.active ~= nil
+end
+
+-- is this control active
+function gui:isActive(id)
+  return self.active == id
+end
+
+function gui:anyHit()
+  return self.hit ~= nil
+end
+
+function gui:isHit()
+  return self.hit == id
+end
+
+function gui:anyFocus()
+  return self.focus ~= nil
+end
+
+function gui:isFocus(id)
+  return self.focus == id
+end
+
+function gui:getFocus(id)
+  self.focus = id
+end
+
+function gui:getState(id)
+  if self:isActive(id) then
+    return "active"
+  elseif self:isHovered(id) then
+    return "hovered"
+  elseif  self:isHit(id) then
+    return "hit"
+  elseif self:isFocus(is) then
+    return "focus"
+  end
+  return "none"
+end
+
+-- is this control hit
+-- callback(X relative to top left, Y relative to top left)
+function gui:registerMouseHit(id, relX, relY, callback)
+  if callback(self.mouseX - relX, self.mouseY - relY) then
+    self.hovered = id
+    if self.active == nil and self.mouseDown.left then
+      self.active = id
+    end
+  end
+  return self:getState(id)
+end
+
+-- is hitbox hit
+function gui:registerHitBox(id, x, y, w, h)
+  return self:registerMouseHit(id, x, y, function(x,y)
+    return x >= 0 and y >= 0 and x <= w and y <= h 
+  end)
+end
+
+function gui:mouseClick(id)
+  if not self.mouseDown and self:isActive(id) and self:isHovered(id) then
+    self.hit = id
+    return true
+  end
+  return false
 end
 
 function gui:__index(index)
@@ -99,6 +198,12 @@ function gui:__index(index)
     -- index not found, return control if exists or nil
     return gui.controls[index] 
   end
+end
+
+function gui:__call(...)
+  local obj = setmetatable({}, getmetatable(self))
+  obj:new(...)
+  return obj
 end
 
 return gui
