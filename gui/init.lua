@@ -43,9 +43,6 @@ end
 function gui.addControl(name, c)
   gui.controls[name] = c
 end
-function gui:addControl(name, c)
-  gui.controls[name] = c
-end
 
 -- render gui
 function gui:draw()
@@ -190,13 +187,15 @@ function gui:mouseClick(id)
 end
 
 function gui:__index(index)
+  local this = self
+
   -- get from this instance
   local get = getmetatable(self)[index]
   if get  ~= nil then 
     return get -- this instance has item with this index
   else
     -- index not found, return control if exists or nil
-    return gui.controls[index] 
+    return function(...) gui.controls[index](this, unpack(...)) end
   end
 end
 
