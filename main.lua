@@ -1,13 +1,13 @@
-local inspect = require "vendor.inspect"
 local gui = require "gui"
+local inspect = require "vendor.inspect"
 require "gui.button"
 
-print(inspect(gui.controls))
-
-gui:button("hi", 0,0,5,6)
-
 function love.update()
-
+	local b = gui:button("hi", 50, 50, 50, 50)
+	print(b.state)
+	if b.state == "active" then
+		gui:button(":-)", 100, 50, 50, 50)
+	end
 end
 
 function love.draw()

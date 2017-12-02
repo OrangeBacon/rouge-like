@@ -1,8 +1,11 @@
 local Object = require "vendor.classic"
 local guicontrol = require "gui.guicontrol"
+local inspect = require "vendor.inspect"
 
 local gui = Object:extend()
 gui.controls = {}
+
+local none = {}
 
 --[[
   Gui control states:
@@ -37,6 +40,14 @@ function gui:new()
 
   -- list of functions to call on next draw call
   self.drawQueue = {n=0}
+
+  self.theme = {
+    hovered = {bg = { 50,153,187}},
+    active =  {bg = { 66, 66, 66}},
+    hit =     {bg = {255,153,187}},
+    focus =   {bg = {100,100,187}},
+    none =    {bg = { 66, 66, 66}},
+  }
 end
 
 -- add control to static controls table
@@ -47,7 +58,7 @@ end
 -- render gui
 function gui:draw()
   -- stop adding new controls
-  self.exitFrame()
+  self:exitFrame()
   
   -- save all state
   love.graphics.push("all")
@@ -62,7 +73,7 @@ function gui:draw()
   love.graphics.pop()
 
   -- prepare to add new controls
-  self.enterFrame()
+  self:enterFrame()
 end
 
 -- add function to be called during draw
@@ -116,6 +127,10 @@ function gui:isHovered(id)
   return self.hovered == id
 end
 
+function gui:wasHovered(id)
+  return self.lastHovered == id
+end
+
 -- is anything active
 function gui:anyActive()
   return self.active ~= nil
@@ -130,7 +145,7 @@ function gui:anyHit()
   return self.hit ~= nil
 end
 
-function gui:isHit()
+function gui:isHit(id)
   return self.hit == id
 end
 
@@ -153,7 +168,7 @@ function gui:getState(id)
     return "hovered"
   elseif  self:isHit(id) then
     return "hit"
-  elseif self:isFocus(is) then
+  elseif self:isFocus(id) then
     return "focus"
   end
   return "none"
@@ -164,7 +179,8 @@ end
 function gui:registerMouseHit(id, relX, relY, callback)
   if callback(self.mouseX - relX, self.mouseY - relY) then
     self.hovered = id
-    if self.active == nil and self.mouseDown.left then
+    --print(self.active, self.mouseDown)
+    if self.active == nil and self.mouseDown then
       self.active = id
     end
   end
@@ -186,16 +202,25 @@ function gui:mouseClick(id)
   return false
 end
 
+function gui:getThemeColor(state)
+  return self.theme[state]
+end
+
 function gui:__index(index)
   local this = self
 
   -- get from this instance
   local get = getmetatable(self)[index]
+
   if get  ~= nil then 
     return get -- this instance has item with this index
-  else
+  elseif gui.controls[index] ~= nil then
     -- index not found, return control if exists or nil
-    return function(...) gui.controls[index](this, unpack(...)) end
+    return function(...) 
+      return gui.controls[index](...)
+    end
+  else
+    return nil
   end
 end
 
@@ -205,4 +230,4 @@ function gui:__call(...)
   return obj
 end
 
-return gui
+return gui()
