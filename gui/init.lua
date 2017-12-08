@@ -54,6 +54,7 @@ function gui:new()
   -- list of functions to call on next draw call
   self.drawQueue = {n=0}
 
+  self.keyPressed = ""
   self.text = ""
 
   self.escExit = true
@@ -65,11 +66,11 @@ function gui:new()
   self.tabOrder = {}
 
   self.theme = {
-    hovered = {bg = { 50,153,187}},
-    active =  {bg = { 66,300, 66}},
-    hit =     {bg = {255,153,187}},
-    focus =   {bg = {100,100,187}},
-    none =    {bg = { 66, 66, 66}},
+    hovered = {bg = { 50,153,187}, fg = {255,255,255}},
+    active =  {bg = { 66,300, 66}, fg = {255,255,255}},
+    hit =     {bg = {255,153,187}, fg = {255,255,255}},
+    focus =   {bg = {100,100,187}, fg = {255,255,255}},
+    none =    {bg = { 66, 66, 66}, fg = {188,188,188}},
   }
 end
 
@@ -124,6 +125,7 @@ local function tabGet(order, focus, reverse)
   local idx = math.fmod((tblidx+add), (#order+1))
   if idx == 0 and add == -1 then idx = #order end
   if idx == 0 then idx = 1 end
+  if idx == -1 then idx = #order end
   return order[idx]
 end
 
@@ -140,17 +142,20 @@ function gui:tabDisable()
 end
 
 function gui:updateTab()
-  if self.tabDisabled and string.find(self.text, "tab") and love.keyboard.isDown("lctrl", "rctrl") then
+  if self.tabDisabled and string.find(self.keyPressed, "tab") and love.keyboard.isDown("lctrl", "rctrl") then
     self:tab()
     return
-  elseif string.find(self.text, "tab") then
+  elseif string.find(self.keyPressed, "tab") then
     self:tab()
     return
   end
 end
 function gui:keyDown(t)
-  if self.escExit and t == "escape" then love.event.quit() end
-  self.text = self.text .. t .. " "
+  if self.escExit and t == "escape" and love.keyboard.isDown("lshift", "rshift") then
+    love.event.quit()
+  end
+  if t == "escape" then self:getFocus(nil) end
+  self.keyPressed = self.keyPressed .. t .. " "
 end
 
 -- add function to be called during draw
@@ -180,8 +185,8 @@ function gui:enterFrame()
   -- reset hit
   self.hit = nil
 
+  self.keyPressed = ""
   self.text = ""
-
   self.tabOrder = {}
   self.idx = 0
   self.tabDisabled = false
@@ -242,6 +247,10 @@ end
 
 function gui:getFocus(id)
   self.focus = id
+end
+
+function gui:textinput(t)
+  self.text = self.text .. t
 end
 
 function gui:getState(id)
