@@ -2,8 +2,10 @@ local GameState = require "engine.state"
 local gui = require "gui"
 require "gui.button"
 require "gui.label"
+require "gui.progress"
 
 local text = {"hi", "hi", "hi"}
+local progress = 0
 
 local Loading = GameState:extend();
 
@@ -12,28 +14,8 @@ function Loading:init()
 end
 
 function Loading:update(dt)
-	gui:label("Hello, World", {id=4}, 100, 50)
-	if gui:button(text[1], {id=0}, 50, 50).hit then
-		if text[1] == "hi" then
-			text[1] = ":-)"
-		else 
-			text[1] = "hi"
-		end
-	end
-	if gui:button(text[2], {id=1}, 50, 100).hit then
-		if text[2] == "hi" then
-			text[2] = ":-)"
-		else 
-			text[2] = "hi"
-		end
-	end
-	if gui:button(text[3], {id=2}, 50, 150).hit then
-		if text[3] == "hi" then
-			text[3] = ":-)"
-		else 
-			text[3] = "hi"
-		end
-	end
+	progress = (progress + 1) % 100
+	gui.progressVertical(100, 0, 500, 40, progress)
 	gui:updateTab()
 end
 

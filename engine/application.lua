@@ -16,10 +16,10 @@ end
 function Application:_setCallbacks()
 	local newState = self.state_stack[#self.state_stack]
 	newState:init()
-	love.update = newState.update
-	love.draw = newState.draw
-	love.keypressed = newState.keypressed
-	love.textinput = newState.textinput
+	love.update = function(...)newState:update(...)end
+	love.draw = function(...)newState:draw(...)end
+	love.keypressed = function(...)newState:keypressed(...)end
+	love.textinput = function(...)newState:textinput(...)end
 end
 
 function Application:pushState(State)

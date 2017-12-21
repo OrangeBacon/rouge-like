@@ -1,5 +1,4 @@
 local gui = require "gui"
-local inspect = require "vendor.inspect"
 
 local function draw(core, id, x, y, w, h, text)
 	local c = core:getThemeColor(core:getState(id))
