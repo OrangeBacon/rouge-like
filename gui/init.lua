@@ -1,5 +1,4 @@
 local Object = require "vendor.classic"
-local guicontrol = require "gui.guicontrol"
 local inspect = require "vendor.inspect"
 
 table.indexOf = function( t, object )

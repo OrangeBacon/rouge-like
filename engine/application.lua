@@ -14,15 +14,12 @@ function Application:new(State)
 end
 
 function Application:_setCallbacks()
-	local new = self.state_stack[#self.state_stack]
-	new:init()
-	love.update = function(dt)
-		new.gui:update(dt)
-		new.update(dt)
-	end
-	love.draw = function()
-		new.gui:draw()
-	end
+	local newState = self.state_stack[#self.state_stack]
+	newState:init()
+	love.update = newState.update
+	love.draw = newState.draw
+	love.keypressed = newState.keypressed
+	love.textinput = newState.textinput
 end
 
 function Application:pushState(State)
