@@ -12,9 +12,9 @@ gui.addControl("progressHorizontal", function(core, ...)
 	local opt, x, y, length, height, progress = core:getOptions(...)
 	local id = opt.id or (progress * 3.1415) -- create hopefuly unique id
 
-	core:registerHitBox(id, x, y, height, length)
+	core:registerHitBox(id, x, y, length, height)
 
-	progX = length * progress / 100
+	progX = length * math.min(math.max(progress, 0), 100) / 100
 	progY = height
 
 	core:addDraw(draw, core, id, x, y, length, height, progX, progY)
@@ -35,7 +35,7 @@ gui.addControl("progressVertical", function(core, ...)
 
 	core:registerHitBox(id, x, y, width, length)
 
-	progY = length * progress / 100
+	progY = length * math.min(math.max(progress, 0), 100) / 100
 	progX = width
 
 	core:addDraw(draw, core, id, x, y, width, length, progX, progY)

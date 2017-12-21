@@ -1,8 +1,8 @@
 local GameState = require "engine.state"
 local gui = require "gui"
-require "gui.button"
 require "gui.label"
 require "gui.progress"
+local loaded = require "states.loaded"
 
 local text = {"hi", "hi", "hi"}
 local progress = 0
@@ -14,8 +14,13 @@ function Loading:init()
 end
 
 function Loading:update(dt)
-	progress = (progress + 1) % 100
-	gui.progressVertical(100, 0, 500, 40, progress)
+	if progress >= 110 then
+		self.app:pushState(loaded())
+	end
+	progress = progress + 0.1
+	local text = "Loading: " .. math.min(math.floor(progress), 100) .."%"
+	gui.label(text, love.graphics.getWidth()/2 - love.graphics.getFont():getWidth(text)/2, 50)
+	gui.progressHorizontal(100, 100, love.graphics.getWidth() - 200, 40, progress)
 	gui:updateTab()
 end
 
